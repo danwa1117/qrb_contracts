@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package qrb.contract.sensor.v1;
+
+import "qrb/contract/common/v1/header.proto";
+
+// Mirrors sensor_msgs/Image, plus the native layout of pixels carried out of band.
+message Image {
+    qrb.contract.common.v1.Header header       = 1;  // stamp: acquisition time, ROS time base.
+    uint32                        height       = 2;  // Image height in pixels.
+    uint32                        width        = 3;  // Image width in pixels.
+    string                        encoding     = 4;  // "rgb8", "bgr8" or "nv12".
+    bool                          is_bigendian = 5;  // Always false for the supported encodings.
+    uint32                        step         = 6;  // Logical row bytes: width * 3 for rgb8/bgr8, width for nv12.
+    bytes                         data         = 7;  // Raw pixels; empty when they travel in a separate DMA-BUF.
+
+    // Physical layout of one plane in the separate DMA-BUF. A plane starts right
+    // after the previous plane's buffer_size, relative to the payload offset.
+    message Plane {
+        uint32 stride        = 1;  // Bytes per physical row, including row padding.
+        uint32 actual_height = 2;  // Allocated rows, including height padding.
+        uint32 buffer_size   = 3;  // stride * actual_height plus any trailing padding.
+    }
+    repeated Plane planes     = 8;  // Empty: qrb_ros_transport aligned layout. rgb8/bgr8: 1 plane; nv12: Y, UV.
+    uint32         batch_size = 9;  // Frames in the buffer; 0 or 1, and 1 when planes are set.
+}
