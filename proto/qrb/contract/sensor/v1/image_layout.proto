@@ -4,8 +4,8 @@ package qrb.contract.sensor.v1;
 
 import "qrb/contract/common/v1/header.proto";
 
-// Mirrors sensor_msgs/Image, plus the native layout of pixels carried out of band.
-message Image {
+// Derived from sensor_msgs/Image; adds the native layout of pixels carried in a separate DMA-BUF.
+message ImageLayout {
     qrb.contract.common.v1.Header header       = 1;  // stamp: acquisition time, ROS time base.
     uint32                        height       = 2;  // Image height in pixels.
     uint32                        width        = 3;  // Image width in pixels.
